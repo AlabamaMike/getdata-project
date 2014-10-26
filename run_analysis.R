@@ -5,7 +5,7 @@ library(plyr)
 download.file("https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip ", "dataset.zip", "curl")
 unzip("dataset.zip", exdir = "data")
 
-## Load tables for all required data
+# Load tables for all required data
 x_testDF <- read.table("./data/UCI HAR Dataset/test/X_test.txt", sep="\n", strip.white=T)
 x_trainDF <- read.table("./data/UCI HAR Dataset/train/X_train.txt", sep="\n", strip.white=T)
 y_testDF <- read.table("./data/UCI HAR Dataset/test/y_test.txt", sep="\n", strip.white=T)
@@ -14,7 +14,7 @@ featuresDF <- read.table("./data/UCI HAR Dataset/features.txt", sep="\n", strip.
 subj_trainDF <- read.table("./data/UCI HAR Dataset/train/subject_train.txt", sep="\n", strip.white=T)
 subj_testDF <- read.table("./data/UCI HAR Dataset/test/subject_test.txt", sep="\n", strip.white=T)
 
-# Create single observations for each column
+# Create single observations for each column in test and training data
 x_trainDF <- ldply(strsplit(gsub(" {2,}", " ", x_trainDF$V1 ), " "))
 x_testDF <- ldply(strsplit(gsub(" {2,}", " ", x_testDF$V1 ), " "))
 
@@ -43,14 +43,17 @@ for (i in 3:ncol(mergeDF)){
     mergeDF[,i] <- as.numeric(mergeDF[,i])
 }
 # Write out tidy, wide dataset
-write.table(mergeDF, file="tidy_dataset.txt")
+write.table(mergeDF, file="tidy_dataset.txt", row.name=FALSE)
 
 # 5.- Create a second, independent tidy data set with the average of each variable for each activity and subject
 means <- aggregate(mergeDF[,3] ~ mergeDF$subject + mergeDF$activity, data = mergeDF, FUN = mean)
 
+# Calculate the means for the observation columns
 for (i in 4:ncol(mergeDF)){
     means[,i] <- aggregate( mergeDF[,i] ~ mergeDF$subject + mergeDF$activity, data = mergeDF, FUN = mean )[,3]
 }
+# Label the columns appropriately 
 colnames(means) <- column_names
+
 # Write out means dataset
-write.table(means, file="means_dataset.txt")
+write.table(means, file="means_dataset.txt", row.name=FALSE)
